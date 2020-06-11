@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +13,7 @@ namespace BlinkSyncLib
     /// </summary>
     public class Sync
     {
+
         #region CONSTRUCTORS
 
         /// <summary>
@@ -47,12 +48,12 @@ namespace BlinkSyncLib
         /// <summary>
         /// Get or set the source folder to synchronize
         /// </summary>
-        public virtual DirectoryInfo SourceDirectory { get; set; }
+        public DirectoryInfo SourceDirectory { get; set; }
 
         /// <summary>
         /// Get or set the target folder where all files will be synchronized
         /// </summary>
-        public virtual DirectoryInfo DestinationDirectory { get; set; }
+        public DirectoryInfo DestinationDirectory { get; set; }
 
         /// <summary>
         /// Get or set all synronization parameters
@@ -68,7 +69,12 @@ namespace BlinkSyncLib
         /// </summary>
         public virtual SyncResults Start()
         {
-            SyncResults results = new SyncResults();
+            var begin = DateTime.Now;
+            SyncResults results = new SyncResults()
+            {
+                SourceDirectory = SourceDirectory.FullName,
+                DestinationDirectory = DestinationDirectory.FullName
+            };
 
             if (Validate(this.SourceDirectory.FullName, this.DestinationDirectory.FullName, this.Configuration))
             {
@@ -77,6 +83,8 @@ namespace BlinkSyncLib
 
             }
 
+            var end = DateTime.Now;
+            results.MillisecondsCost = (end - begin).Milliseconds;
             return results;
         }
 
@@ -283,6 +291,7 @@ namespace BlinkSyncLib
             }
 
             // make sure all the selected source files exist in destination
+            var compareMethod = inputParams.CompareMethod;
             foreach (FileInfo srcFile in fiSrc)
             {
                 bool isUpToDate = false;
@@ -290,9 +299,7 @@ namespace BlinkSyncLib
                 // look up in hash table to see if file exists in destination
                 FileInfo destFile = (FileInfo)hashDest[srcFile.Name];
                 // if file exists and length, write time and attributes match, it's up to date
-                if ((destFile != null) && (srcFile.Length == destFile.Length) &&
-                    (srcFile.LastWriteTime == destFile.LastWriteTime) &&
-                    (srcFile.Attributes == destFile.Attributes))
+                if ((destFile != null) && CompareFile.AreEqual(srcFile, destFile, compareMethod))
                 {
                     isUpToDate = true;
                     results.FilesUpToDate++;

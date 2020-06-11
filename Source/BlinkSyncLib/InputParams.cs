@@ -1,11 +1,15 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 
 namespace BlinkSyncLib
 {
     public class InputParams
     {
-       
+        /// <summary>
+        /// Which methods to compare file
+        /// </summary>
+        public CompareMethod CompareMethod { get; set; } = CompareMethod.Default;
+
         /// <summary>
         /// Should exclude hidden files/directories in source
         /// </summary>
@@ -14,7 +18,7 @@ namespace BlinkSyncLib
         /// <summary>
         /// Should delete files/directories from dest than are not present in source
         /// </summary>
-        public bool DeleteFromDest { get; set; }
+        public bool DeleteFromDest { get; set; } = true;
 
         /// <summary>
         /// List of filespecs to exclude
