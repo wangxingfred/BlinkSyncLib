@@ -21,6 +21,11 @@ namespace BlinkSyncLib
         public bool DeleteFromDest { get; set; } = true;
 
         /// <summary>
+        /// Should IncludeFiles and IncludeDirs property apply to dest
+        /// </summary>
+        public bool IncludesApplyToDest { get; set; } = true;
+
+        /// <summary>
         /// List of filespecs to exclude
         /// </summary>
         public Regex[] ExcludeFiles { get; set; }

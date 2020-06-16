@@ -45,7 +45,7 @@ namespace BlinkSyncLib
         /// <summary>
         /// milliseconds cost
         /// </summary>
-        public int MillisecondsCost { get; set; }
+        public double MillisecondsCost { get; set; }
 
         public override string ToString()
         {

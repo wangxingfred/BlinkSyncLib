@@ -84,7 +84,7 @@ namespace BlinkSyncLib
             }
 
             var end = DateTime.Now;
-            results.MillisecondsCost = (end - begin).Milliseconds;
+            results.MillisecondsCost = (end - begin).TotalMilliseconds;
             return results;
         }
 
@@ -141,28 +141,30 @@ namespace BlinkSyncLib
         public virtual FileInfo[] GetFiles(DirectoryInfo directoryInfo, InputParams inputParams, ref SyncResults results)
         {
             // get all files
-            List<FileInfo> fileList = new List<FileInfo>(directoryInfo.GetFiles());
+            var fileInfos = directoryInfo.GetFiles();
 
             // do we need to do any filtering?
-            bool needFilter = (inputParams != null) && (inputParams.AreSourceFilesFiltered);
+            bool needFilter = (inputParams != null) && (inputParams.AreFilesFiltered);
 
-            if (needFilter)
+            if (!needFilter)
             {
-                for (int i = 0; i < fileList.Count; i++)
-                {
-                    FileInfo fileInfo = fileList[i];
-
-                    // filter out any files based on hiddenness and exclude/include filespecs
-                    if ((inputParams.ExcludeHidden && ((fileInfo.Attributes & FileAttributes.Hidden) > 0)) ||
-                         ShouldExclude(inputParams.ExcludeFiles, inputParams.IncludeFiles, fileInfo.Name))
-                    {
-                        fileList.RemoveAt(i);
-                        results.FilesIgnored++;
-                        i--;
-                    }
-                }
+                return fileInfos;
             }
 
+            var fileList = new List<FileInfo>(fileInfos.Length);
+            foreach (var fileInfo in fileInfos)
+            {
+                // filter out any files based on hiddenness and exclude/include filespecs
+                if ((inputParams.ExcludeHidden && ((fileInfo.Attributes & FileAttributes.Hidden) > 0)) ||
+                    ShouldExclude(inputParams.ExcludeFiles, inputParams.IncludeFiles, fileInfo.Name))
+                {
+                    results.FilesIgnored++;
+                }
+                else
+                {
+                    fileList.Add(fileInfo);
+                }
+            }
             return fileList.ToArray();
         }
 
@@ -178,7 +180,7 @@ namespace BlinkSyncLib
             List<DirectoryInfo> directoryList = new List<DirectoryInfo>(directoryInfo.GetDirectories());
 
             // do we need to do any filtering?
-            bool needFilter = (inputParams != null) && (inputParams.AreSourceFilesFiltered);
+            bool needFilter = (inputParams != null) && (inputParams.AreFilesFiltered);
             if (needFilter)
             {
                 for (int i = 0; i < directoryList.Count; i++)
@@ -276,7 +278,7 @@ namespace BlinkSyncLib
             // get list of selected files from source directory
             FileInfo[] fiSrc = GetFiles(diSrc, inputParams, ref results);
             // get list of files in destination directory
-            FileInfo[] fiDest = GetFiles(diDest, null, ref results);
+            FileInfo[] fiDest = GetFiles(diDest, inputParams.IncludesApplyToDest ? inputParams : null, ref results);
 
             // put the source files and destination files into hash tables                     
             Hashtable hashSrc = new Hashtable(fiSrc.Length);
@@ -367,7 +369,7 @@ namespace BlinkSyncLib
             // Get list of selected subdirectories in source directory
             DirectoryInfo[] diSrcSubdirs = GetDirectories(diSrc, inputParams, ref results);
             // Get list of subdirectories in destination directory
-            DirectoryInfo[] diDestSubdirs = GetDirectories(diDest, null, ref results);
+            DirectoryInfo[] diDestSubdirs = GetDirectories(diDest, inputParams.IncludesApplyToDest ? inputParams : null, ref results);
 
             // add selected source subdirectories to hash table, and recursively process them
             Hashtable hashSrcSubdirs = new Hashtable(diSrcSubdirs.Length);

@@ -16,7 +16,7 @@ namespace BlinkSyncLib
         /// <param name="sourceDirectory"></param>
         /// <param name="destinationDirectory"></param>
         /// <returns></returns>
-        public static SyncResults SyncDir(string sourceDirectory, string destinationDirectory)
+        public static SyncResults Sync(string sourceDirectory, string destinationDirectory)
         {
             var sync = new Sync(sourceDirectory, destinationDirectory);
             return sync.Start();
@@ -28,19 +28,10 @@ namespace BlinkSyncLib
         /// <param name="sourceDirectory"></param>
         /// <param name="destinationDirectory"></param>
         /// <returns></returns>
-        public static SyncResults SyncDirExcludeMeta(string sourceDirectory, string destinationDirectory)
+        public static SyncResults SyncExcludeMeta(string sourceDirectory, string destinationDirectory)
         {
-            return SyncDirExcludeType(sourceDirectory, destinationDirectory, "meta");
-            // var excludes = new[] {new Regex(@".+\.meta")};
-            // var sync = new Sync(sourceDirectory, destinationDirectory)
-            // {
-            //     Configuration =
-            //     {
-            //         ExcludeFiles = excludes,
-            //         DeleteExcludeFiles = excludes,
-            //     }
-            // };
-            // return sync.Start();
+            return SyncExcludeFileType(sourceDirectory, destinationDirectory, ".meta");
+
         }
 
         /// <summary>
@@ -48,17 +39,37 @@ namespace BlinkSyncLib
         /// </summary>
         /// <param name="sourceDirectory"></param>
         /// <param name="destinationDirectory"></param>
-        /// <param name="fileType">文件后缀名，比如：meta</param>
+        /// <param name="fileType">文件后缀名，比如：.meta</param>
         /// <returns></returns>
-        public static SyncResults SyncDirExcludeType(string sourceDirectory, string destinationDirectory, string fileType)
+        public static SyncResults SyncExcludeFileType(string sourceDirectory, string destinationDirectory, string fileType)
         {
-            var excludes = new[] {new Regex(@".+\." + fileType)};
+            var excludes = new[] {new Regex(@".+\" + fileType + "$")};
             var sync = new Sync(sourceDirectory, destinationDirectory)
             {
                 Configuration =
                 {
                     ExcludeFiles = excludes,
                     DeleteExcludeFiles = excludes,
+                }
+            };
+            return sync.Start();
+        }
+
+        /// <summary>
+        /// sync directory with specified file type
+        /// </summary>
+        /// <param name="sourceDirectory"></param>
+        /// <param name="destinationDirectory"></param>
+        /// <param name="fileType"></param>
+        /// <returns></returns>
+        public static SyncResults SyncWithFileType(string sourceDirectory, string destinationDirectory, string fileType)
+        {
+            var includes = new[] {new Regex(@".+\" + fileType + "$")};
+            var sync = new Sync(sourceDirectory, destinationDirectory)
+            {
+                Configuration =
+                {
+                    IncludeFiles = includes
                 }
             };
             return sync.Start();
