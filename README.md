@@ -1,6 +1,10 @@
+# Main improvements
+
+- **Support file content comparison.**
+
 # BlinkSyncLib file and directory synchronization library
 
-##Introduction
+## Introduction
 
 BlinkSyncLib is a free file and directory synchronization library. It's based on source code of BlinkSync command line ([http://blinksync.sourceforge.net](http://blinksync.sourceforge.net)).
 
